@@ -1,0 +1,44 @@
+# Build trees and generated CMake files
+build/
+build-*/
+dist/
+out/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+
+# Native and Lua build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.gcda
+*.gcno
+*.gcov
+
+# Test, coverage, and profiling output
+Testing/
+coverage/
+coverage-*.html
+*.profraw
+*.profdata
+
+# Editor and operating-system metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local environment and temporary files
+.env
+.env.*
+*.log
+*.tmp
+*.bak
