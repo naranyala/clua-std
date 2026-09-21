@@ -1,12 +1,14 @@
 package.path = "./?.lua;./lib/?.lua;" .. package.path
 
 local packet = require("packet")
+local cl = require("cl")
 
 local flags = packet.make_flags({
     alert = true,
     calibrated = true,
     battery_low = true,
 })
+flags = cl.flags.set(flags, 3) -- add COMPRESSED using a bit index
 
 local names = {
     { "ALERT", packet.FLAG.ALERT },
@@ -21,4 +23,4 @@ for _, item in ipairs(names) do
 end
 
 assert(packet.has_flag(flags, packet.FLAG.ALERT))
-assert(not packet.has_flag(flags, packet.FLAG.COMPRESSED))
+assert(packet.has_flag(flags, packet.FLAG.COMPRESSED))

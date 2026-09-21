@@ -51,6 +51,10 @@ The binding layer is responsible for:
 - converting C failures into Lua errors;
 - preserving exact unsigned 32-bit values through the 64-bit Lua integer
   requirement.
+- producing independent buffers from the friendly `cl.bytes` helpers.
+
+Floating-point binary primitives assume the platform provides 32-bit IEEE
+`float` and 64-bit IEEE `double`, which are enforced by compile-time checks.
 
 The core layer does not depend on a `lua_State`, which keeps its algorithms
 portable and suitable for separate C-level tests in the future.

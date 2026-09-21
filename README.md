@@ -22,11 +22,14 @@ print(summary.mean)
 
 - `cl.mem` — mutable native byte buffers with bounds-checked access, copying,
   slicing, comparison, and conversion to Lua strings.
+- `cl.bytes` — friendly hex conversion and concatenation for strings and
+  buffers.
 - `cl.bin` — fixed-width signed and unsigned 8/16/32-bit integer packing and
-  reading in little- or big-endian order, plus IEEE 802.3 CRC-32.
+  reading, IEEE 754 `f32`/`f64` values, little- or big-endian order, and CRC-32.
 - `cl.math` — native statistics for non-empty numeric Lua arrays.
-- `cl.bits` — integer bitwise operations, logical shifts, rotations, and
-  population count.
+- `cl.flags` — readable bit flag operations using bit indexes.
+- `cl.bits` — integer bitwise operations, bit testing/set/clear, logical
+  shifts, rotations, and population count.
 
 All byte offsets are zero-based. Invalid ranges, integer values, source
 lengths, and shift counts raise Lua errors instead of allowing unchecked

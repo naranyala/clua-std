@@ -78,6 +78,27 @@ Returns true only when both buffers have the same length and identical bytes.
 
 Performs lexicographic byte comparison and returns `-1`, `0`, or `1`.
 
+### `buffer:find(needle[, offset]) -> integer|nil`
+
+Searches for a string or buffer and returns its zero-based first offset, or
+`nil` when it is absent. The default search offset is `0`. An empty needle is
+found at the supplied offset, including at the end of the buffer.
+
+### `buffer:starts_with(needle) -> boolean`
+
+Returns whether the buffer begins with the supplied string or buffer. An empty
+needle matches.
+
+### `buffer:ends_with(needle) -> boolean`
+
+Returns whether the buffer ends with the supplied string or buffer. An empty
+needle matches.
+
+### `buffer:reverse() -> buffer`
+
+Reverses the bytes in place and returns the same buffer for chaining. Empty and
+single-byte buffers are valid.
+
 ## `cl.bin`
 
 Packers return Lua binary strings. Readers accept either a Lua string or a
@@ -99,10 +120,44 @@ Packers return Lua binary strings. Readers accept either a Lua string or a
 Packers reject values outside the selected type's range. Readers reject
 sources that do not contain the complete fixed-width value.
 
+Floating-point packers and readers use IEEE 754 binary32 or binary64 layouts.
+They accept and return Lua numbers, and readers accept both strings and
+buffers:
+
+| Packer | Reader | Meaning |
+| --- | --- | --- |
+| `f32le(value)` | `read_f32le(source[, offset])` | IEEE binary32 little-endian |
+| `f32be(value)` | `read_f32be(source[, offset])` | IEEE binary32 big-endian |
+| `f64le(value)` | `read_f64le(source[, offset])` | IEEE binary64 little-endian |
+| `f64be(value)` | `read_f64be(source[, offset])` | IEEE binary64 big-endian |
+
+`f32` values are narrowed to C `float` precision before packing. Floating
+values are not range-checked beyond the limits of the underlying C type.
+
 ### `cl.bin.crc32(source) -> integer`
 
 Calculates the standard IEEE 802.3 CRC-32. `source` may be a Lua string or a
 `cl.buffer`. The result is returned as a non-negative Lua integer.
+
+## `cl.bytes`
+
+These helpers are convenience functions for common byte-oriented application
+code. They accept strings and buffers where noted, and return buffers when a
+mutable result is useful.
+
+### `cl.bytes.to_hex(source) -> string`
+
+Converts a string or buffer to uppercase hexadecimal text without separators.
+
+### `cl.bytes.from_hex(text) -> buffer`
+
+Decodes an even-length hexadecimal string into a new buffer. Both uppercase
+and lowercase digits are accepted; invalid characters are rejected.
+
+### `cl.bytes.concat(...) -> buffer`
+
+Concatenates any number of strings and buffers into a new independent buffer.
+Calling it with no arguments returns an empty buffer.
 
 ## `cl.math`
 
@@ -139,6 +194,9 @@ error. `rol` and `ror` normalize their count modulo the integer width.
 - `bnot(value) -> integer`
 - `lshift(value, count) -> integer`
 - `rshift(value, count) -> integer`
+- `btest(value, bit) -> boolean`
+- `bset(value, bit) -> integer`
+- `bclear(value, bit) -> integer`
 - `rol(value, count) -> integer`
 - `ror(value, count) -> integer`
 - `popcount(value) -> integer`
@@ -147,4 +205,4 @@ error. `rol` and `ror` normalize their count modulo the integer width.
 
 ## `cl.version() -> string`
 
-Returns the module version, currently `"0.3.0"`.
+Returns the module version, currently `"0.5.0"`.

@@ -43,9 +43,28 @@ static void test_endian_helpers(void) {
     assert(clua_read_u32be(bytes32) == UINT32_C(0x12345678));
 }
 
+static void test_float_helpers(void) {
+    unsigned char bytes[8];
+
+    clua_write_f32le(bytes, 1.0f);
+    assert(memcmp(bytes, "\x00\x00\x80\x3F", 4) == 0);
+    assert(clua_read_f32le(bytes) == 1.0f);
+    clua_write_f32be(bytes, 1.0f);
+    assert(memcmp(bytes, "\x3F\x80\x00\x00", 4) == 0);
+    assert(clua_read_f32be(bytes) == 1.0f);
+
+    clua_write_f64le(bytes, 1.0);
+    assert(memcmp(bytes, "\x00\x00\x00\x00\x00\x00\xF0\x3F", 8) == 0);
+    assert(clua_read_f64le(bytes) == 1.0);
+    clua_write_f64be(bytes, 1.0);
+    assert(memcmp(bytes, "\x3F\xF0\x00\x00\x00\x00\x00\x00", 8) == 0);
+    assert(clua_read_f64be(bytes) == 1.0);
+}
+
 int main(void) {
     test_stats();
     test_crc32();
     test_endian_helpers();
+    test_float_helpers();
     return 0;
 }

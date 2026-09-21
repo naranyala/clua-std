@@ -16,8 +16,9 @@ checksum    u32be   CRC32 of every preceding byte
 The project demonstrates a useful division of labor:
 
 - `cl.mem` owns mutable packet storage;
+- `cl.bytes` provides human-readable hex inspection and composition;
 - `cl.bin` encodes and decodes wire values;
-- `cl.bits` manages compact flags;
+- `cl.bits` and `cl.flags` manage compact flags;
 - `cl.bin.crc32` detects corruption;
 - `cl.math.stats` summarizes decoded samples.
 
@@ -33,6 +34,8 @@ lua 02_protocol/main.lua
 lua 03_flags/main.lua
 lua 04_metrics/main.lua
 lua 05_end_to_end/main.lua
+lua 06_sensor_record/main.lua
+lua 07_validation/main.lua
 ```
 
 The examples use `lib/` through the local Lua package path configured in each
@@ -48,3 +51,6 @@ script. If your module uses another suffix, adjust `LUA_CPATH` accordingly.
 - `04_metrics/` — native statistics over decoded sample data.
 - `05_end_to_end/` — full encode, inspect, validate, decode, and summarize
   workflow.
+- `06_sensor_record/` — IEEE floating-point fields and single-bit flag
+  helpers in a compact calibration record.
+- `07_validation/` — malformed magic, trailing data, and checksum rejection.

@@ -26,4 +26,13 @@ void clua_write_u32le(unsigned char bytes[4], uint32_t value);
 void clua_write_u16be(unsigned char bytes[2], uint16_t value);
 void clua_write_u32be(unsigned char bytes[4], uint32_t value);
 
+float clua_read_f32le(const unsigned char bytes[4]);
+float clua_read_f32be(const unsigned char bytes[4]);
+double clua_read_f64le(const unsigned char bytes[8]);
+double clua_read_f64be(const unsigned char bytes[8]);
+void clua_write_f32le(unsigned char bytes[4], float value);
+void clua_write_f32be(unsigned char bytes[4], float value);
+void clua_write_f64le(unsigned char bytes[8], double value);
+void clua_write_f64be(unsigned char bytes[8], double value);
+
 #endif
