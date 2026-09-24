@@ -205,6 +205,8 @@ tests, documentation, and example plan are agreed in the corresponding TODO.
     documented as low-level-only.
   - Done when `examples/packet-lab` and future examples show complete coverage
     without duplicating the test suite.
+  - A first matrix is documented in `docs/primitive-coverage.md`; automated
+    enforcement remains open.
 
 - [ ] **T-061 — Expand packet-lab into a protocol cookbook** · Intent: `I2`, `I3`, `I4`, `I6`
   - Add examples for malformed packets, optional fields, version negotiation,
@@ -224,6 +226,8 @@ tests, documentation, and example plan are agreed in the corresponding TODO.
     prevent packet-lab from defining the entire library design.
   - Done when the example has its own README, fixtures, validation, and a
     clear reason to use `clua-std`.
+  - `examples/record-index` now covers indexed binary records; automated
+    execution and fixture expansion remain open.
 
 ## P1 — Release gates for the expanded standard library
 
@@ -233,6 +237,8 @@ tests, documentation, and example plan are agreed in the corresponding TODO.
   - Require a version change and migration note for breaking behavior.
   - Done when the rules are documented and the current `0.5.0` surface is
     labeled experimental, stable, or compatibility-frozen.
+  - The policy is documented in `docs/compatibility.md`; the current label is
+    Experimental until runtime/portability gates pass.
 
 - [ ] **T-071 — Add generated API surface verification** · Intent: `I2`, `I6`
   - Maintain one authoritative list of exported namespaces and functions and
@@ -248,6 +254,53 @@ tests, documentation, and example plan are agreed in the corresponding TODO.
     convenience functions solely because they are implemented in C.
   - Done when benchmark results inform which candidates from T-050 are worth
     native implementation.
+  - A repeatable local harness is present in `benchmarks/`; measured budgets
+    and baseline results remain open.
+
+## P2 — Close the remaining usability and release gaps
+
+- [ ] **T-080 — Make end-to-end Lua validation executable in supported environments** · Intent: `I5`, `I6`
+  - Provide a documented shared/PIC Lua setup and make CTest fail with an
+    actionable diagnostic when the module cannot be linked.
+  - Run the complete Lua test suite and every integration example in CI.
+  - Done when a supported environment proves `require("cl")`, CTest, and the
+    examples all work from a clean checkout.
+
+- [ ] **T-081 — Add installation and release packaging** · Intent: `I5`, `I6`
+  - Add a CMake install target for the module, public documentation, and
+    example metadata without installing build artifacts.
+  - Define package layout, release archive contents, and version sourcing.
+  - Done when `cmake --install` produces a usable module tree and a clean
+    release archive can be generated reproducibly.
+
+- [ ] **T-082 — Add property and fuzz testing for byte boundaries** · Intent: `I1`, `I3`, `I6`
+  - Generate random buffers and values for pack/read round-trips, slicing,
+    copying, hex conversion, and malformed source lengths.
+  - Keep fuzz tests bounded and deterministic in ordinary CI, with an optional
+    sanitizer/fuzzer job for longer runs.
+  - Done when failures identify an input seed and the suite covers all public
+    byte-source primitives.
+
+- [ ] **T-083 — Verify every integration example automatically** · Intent: `I4`, `I5`, `I6`
+  - Add a CMake/CTest or CI runner that executes each example from its intended
+    working directory with the freshly built module path.
+  - Capture expected output only where output is part of the contract; use
+    assertions for behavior.
+  - Done when adding a new example without a runnable check is impossible or
+    visibly reported by CI.
+
+- [ ] **T-084 — Generate and verify the public API surface** · Intent: `I2`, `I6`
+  - Maintain one machine-readable namespace/function inventory and compare it
+    with C registration tables, API documentation, and Lua tests.
+  - Detect stale version strings and undocumented exports.
+  - Done when CI reports missing, extra, or undocumented public functions.
+
+- [ ] **T-085 — Establish a release checklist and support statement** · Intent: `I2`, `I5`, `I6`
+  - Define supported Lua versions, integer/ABI assumptions, operating systems,
+    compilers, linker requirements, test evidence, and known limitations.
+  - Require the checklist for every versioned release.
+  - Done when users can distinguish experimental, supported, and unsupported
+    environments without reading implementation source.
 
 ## Backlog rules
 
@@ -258,3 +311,81 @@ tests, documentation, and example plan are agreed in the corresponding TODO.
 4. When an intent changes, update this file and re-check every linked TODO.
 5. Primitive work follows this order: inventory, contract, core algorithm,
    binding, tests, documentation, example, then benchmark.
+## Recommended development roadmap
+
+This roadmap captures the broader development strategy. The actionable
+contracts remain the stable T-IDs above; completed work must update both the
+contract and its validation evidence.
+
+### Phase 1 — Make the current core dependable
+
+- [ ] Expand tests for invalid offsets, oversized lengths, integer overflow,
+  empty buffers, maximum supported sizes, allocation failures, and partial
+  operations.
+- [ ] Add AddressSanitizer, UndefinedBehaviorSanitizer, and optional
+  Valgrind/MemorySanitizer CI jobs.
+- [ ] Measure coverage of `csrc/core.c`, buffer ownership paths, and all
+  public Lua bindings.
+- [ ] Fuzz binary decoders, buffer operations, CRC-32, and hexadecimal
+  conversion.
+- [ ] Define behavior for allocation failure, very large buffers, integer
+  overflow, and partial operations.
+- [ ] Benchmark buffer copying, slicing, binary decoding, and large-buffer
+  operations.
+
+### Phase 2 — Improve the developer experience
+
+- [ ] Add a CMake install/export package with a stable imported target.
+- [ ] Add a stable module version and compatibility policy.
+- [ ] Generate API documentation from one authoritative specification.
+- [ ] Expand API documentation with argument types, return values, mutation
+  behavior, ownership, and error conditions.
+- [ ] Add optional Lua type definitions for editor support.
+- [ ] Add a compatibility test suite for multiple Lua versions.
+
+### Phase 3 — Strengthen the architecture
+
+- [ ] Extract repeated validation into small reusable helpers.
+- [ ] Split codecs, buffers, statistics, and flags into internal modules if
+  `csrc/cl.c` becomes difficult to navigate.
+- [ ] Keep the public Lua API stable while allowing internal C refactors.
+- [ ] Standardize error categories and messages at the Lua boundary.
+- [ ] Apply integer-safe size calculations before allocations and pointer
+  arithmetic.
+- [ ] Mark public APIs as stable, experimental, or deprecated.
+
+### Phase 4 — Add high-value capabilities
+
+- [ ] Add safe file and stream integration with explicit allocation limits,
+  partial I/O handling, and record codecs.
+- [ ] Add encoding utilities such as Base16/Base64/Base32, UTF-8 validation,
+  and constant-time comparison.
+- [ ] Add binary readers/writers, growable builders, concatenated buffers,
+  and explicitly owned zero-copy views where justified.
+- [ ] Add checked integer conversion, saturating arithmetic, and explicit-width
+  bit helpers.
+- [ ] Add interoperability with Lua file descriptors, callbacks, and safe
+  buffer/string conversion.
+
+### Phase 5 — Distribution and ecosystem
+
+- [ ] Test Linux, macOS, and Windows in CI.
+- [ ] Support Lua 5.3, Lua 5.4, and LuaJIT when technically compatible.
+- [ ] Publish reproducible release artifacts and semantic-version releases.
+- [ ] Maintain a changelog, migration guide, and compatibility matrix.
+- [ ] Provide LuaRocks or equivalent distribution packaging.
+
+### Immediate implementation order
+
+1. Add sanitizer and coverage CI.
+2. Add comprehensive failure-path and boundary tests.
+3. Add fuzz targets for binary parsers and buffer operations.
+4. Introduce explicit allocation and size limits.
+5. Add CMake installation/export support.
+6. Add a binary reader/writer abstraction.
+7. Add safe file I/O helpers.
+8. Improve documentation and versioning.
+9. Expand portability testing.
+
+The guiding principle is to preserve the safety model, make contracts explicit,
+and add features only after correctness infrastructure can detect regressions.

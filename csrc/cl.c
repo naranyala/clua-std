@@ -11,6 +11,9 @@
 #include "core.h"
 
 #define CL_BUFFER_MT "cl.buffer"
+#ifndef CLUA_MAX_BUFFER_SIZE
+#define CLUA_MAX_BUFFER_SIZE ((size_t)1024U * 1024U * 1024U)
+#endif
 
 /* Exact round-trips for the full unsigned 32-bit range require this. */
 _Static_assert(sizeof(lua_Integer) >= 8, "cl requires a 64-bit Lua integer type");
@@ -32,6 +35,7 @@ static void check_range(lua_State *L, int arg, size_t offset, size_t length, siz
 static const unsigned char *check_byte_source(lua_State *L, int arg, size_t *length);
 
 static cl_buffer *push_buffer(lua_State *L, size_t size) {
+    if (size > CLUA_MAX_BUFFER_SIZE) luaL_error(L, "buffer exceeds the maximum supported size");
     if (size > SIZE_MAX - sizeof(cl_buffer)) luaL_error(L, "buffer is too large");
     cl_buffer *buffer = (cl_buffer *)lua_newuserdata(L, sizeof(*buffer) + size);
     buffer->size = size;

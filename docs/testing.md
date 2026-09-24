@@ -20,6 +20,9 @@ Run it through CTest:
 ctest --test-dir build --output-on-failure
 ```
 
+CTest also runs every `examples/**/main.lua` program with the built module
+available through a platform-appropriate `LUA_CPATH`, plus the root Lua example.
+
 The test intentionally uses `pcall` for error contracts so it does not depend
 on exact Lua error wording.
 

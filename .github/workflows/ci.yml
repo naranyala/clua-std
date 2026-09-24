@@ -17,3 +17,33 @@ jobs:
         run: cmake --build build --parallel
       - name: Test
         run: ctest --test-dir build --output-on-failure
+
+  sanitizer-and-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install --yes cmake gcc lua5.4 liblua5.4-dev gcovr
+      - name: Configure sanitizers
+        run: cmake -S . -B build-sanitize -DCLUA_ENABLE_SANITIZERS=ON
+      - name: Build and test sanitizers
+        run: cmake --build build-sanitize --parallel && ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir build-sanitize --output-on-failure
+      - name: Configure coverage
+        run: cmake -S . -B build-coverage -DCLUA_ENABLE_COVERAGE=ON
+      - name: Build and test coverage
+        run: cmake --build build-coverage --parallel && ctest --test-dir build-coverage --output-on-failure
+      - name: Report coverage
+        run: gcovr --root . --filter csrc --exclude build-sanitize --exclude build-coverage --xml coverage.xml
+
+  macos-portability:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew install cmake lua
+      - name: Configure
+        run: cmake -S . -B build
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

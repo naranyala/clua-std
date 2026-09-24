@@ -6,6 +6,26 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 find_package(Lua 5.3 REQUIRED)
+find_program(LUA_EXECUTABLE NAMES lua lua5.4 lua5.3 lua54 lua53 REQUIRED)
+
+include(GNUInstallDirs)
+
+option(CLUA_ENABLE_SANITIZERS "Build with address and undefined behavior sanitizers" OFF)
+option(CLUA_ENABLE_COVERAGE "Build with gcov-compatible coverage instrumentation" OFF)
+
+if(CLUA_ENABLE_SANITIZERS AND MSVC)
+    message(FATAL_ERROR "CLUA_ENABLE_SANITIZERS is not supported with MSVC")
+endif()
+
+if(CLUA_ENABLE_SANITIZERS AND NOT MSVC)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
+if(CLUA_ENABLE_COVERAGE AND NOT MSVC)
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
 
 # A static Lua archive must have been built with position-independent code to
 # be linkable into this shared module. Keep configuration usable with either
@@ -27,6 +47,7 @@ target_include_directories(cl PRIVATE
 )
 
 target_link_libraries(cl PRIVATE ${LUA_LIBRARIES})
+add_library(clua_std::cl ALIAS cl)
 
 if(MSVC)
     target_compile_options(cl PRIVATE /W4 /WX)
@@ -60,4 +81,62 @@ add_test(
 )
 set_tests_properties(cl_lua_tests PROPERTIES
     ENVIRONMENT "LUA_CPATH=$<TARGET_FILE_DIR:cl>/?$<TARGET_FILE_SUFFIX:cl>;;"
+)
+
+file(GLOB_RECURSE CLUA_EXAMPLE_MAIN_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/examples/*/main.lua"
+    "${CMAKE_CURRENT_SOURCE_DIR}/examples/*/*/main.lua"
+)
+foreach(example_file IN LISTS CLUA_EXAMPLE_MAIN_FILES)
+    get_filename_component(example_dir "${example_file}" DIRECTORY)
+    string(REGEX REPLACE "[^A-Za-z0-9_]" "_" example_test_name "${example_file}")
+    add_test(
+        NAME cl_example_${example_test_name}
+        COMMAND ${LUA_EXECUTABLE} ${example_file}
+        WORKING_DIRECTORY ${example_dir}
+    )
+    set_tests_properties(cl_example_${example_test_name} PROPERTIES
+        ENVIRONMENT "LUA_CPATH=$<TARGET_FILE_DIR:cl>/?$<TARGET_FILE_SUFFIX:cl>;;"
+        LABELS "example"
+    )
+endforeach()
+
+add_test(
+    NAME cl_example_main
+    COMMAND ${LUA_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/lua/main.lua 1 2 3
+)
+set_tests_properties(cl_example_main PROPERTIES
+    ENVIRONMENT "LUA_CPATH=$<TARGET_FILE_DIR:cl>/?$<TARGET_FILE_SUFFIX:cl>;;"
+    LABELS "example"
+)
+
+install(TARGETS cl
+    EXPORT clua_stdTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+install(FILES README.md docs/api.md docs/architecture.md docs/build-and-portability.md
+    DESTINATION ${CMAKE_INSTALL_DOCDIR}
+)
+install(EXPORT clua_stdTargets
+    FILE clua_stdTargets.cmake
+    NAMESPACE clua_std::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/clua_std
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    cmake/clua_stdConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/clua_stdConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/clua_std
+)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/clua_stdConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/clua_stdConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/clua_stdConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/clua_std
 )

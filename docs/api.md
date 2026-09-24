@@ -14,8 +14,8 @@ raise a Lua error on invalid types, ranges, or buffer bounds.
 ### `cl.mem.new(size[, fill]) -> buffer`
 
 Creates a mutable native byte buffer of `size` bytes. `size` must be
-non-negative. `fill` defaults to `0` and must be an integer from `0` through
-`255`.
+non-negative and no larger than 1 GiB. `fill` defaults to `0` and must be an
+integer from `0` through `255`.
 
 ### `cl.mem.from_string(value) -> buffer`
 
